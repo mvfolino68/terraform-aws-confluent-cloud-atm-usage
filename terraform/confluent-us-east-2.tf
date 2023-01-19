@@ -28,7 +28,7 @@ resource "confluent_schema_registry_cluster" "sr" {
 # KAFKA
 # ------------------------------------------------------
 resource "confluent_kafka_cluster" "basic" {
-    display_name = "gko-case-cluster"
+    display_name = "gko-case-cluster${random_id.env_display_id.hex}"
     availability = "MULTI_ZONE"
     cloud = "AWS"
     region = "${local.aws_region}"

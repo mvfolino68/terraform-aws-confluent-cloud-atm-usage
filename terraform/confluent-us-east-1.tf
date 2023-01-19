@@ -5,7 +5,7 @@ resource "random_id" "env_display_id_useast1" {
 # KAFKA
 # ------------------------------------------------------
 resource "confluent_kafka_cluster" "basic_useast1" {
-    display_name = "gko-case-cluster_useast1"
+    display_name = "gko-case-cluster_useast1${random_id.env_display_id_useast1.hex}"
     availability = "MULTI_ZONE"
     cloud = "AWS"
     region = "${local.aws_region_useast1}"
