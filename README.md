@@ -1,4 +1,4 @@
-# Terraform Template for DWH / Streaming ETL
+# Terraform Template for GKO Case 1
 
 ## Before you get started
 
