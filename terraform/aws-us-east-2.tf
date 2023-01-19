@@ -7,7 +7,7 @@ resource "random_id" "vpc_display_id" {
 resource "aws_vpc" "main" { 
     cidr_block = "10.0.0.0/16"
     tags = {
-        Name = "realtime-dwh-vpc-main-${random_id.vpc_display_id.hex}"
+        Name = "gko-case-vpc-main-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -19,7 +19,7 @@ resource "aws_subnet" "public_subnets" {
     cidr_block = "10.0.${count.index+1}.0/24"
     map_public_ip_on_launch = true
     tags = {
-        Name = "realtime-dwh-public-subnet-${count.index}-${random_id.vpc_display_id.hex}"
+        Name = "gko-case-public-subnet-${count.index}-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -28,7 +28,7 @@ resource "aws_subnet" "public_subnets" {
 resource "aws_internet_gateway" "igw" { 
     vpc_id = aws_vpc.main.id
     tags = {
-        Name = "realtime-dwh-igw-${random_id.vpc_display_id.hex}"
+        Name = "gko-case-igw-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -41,7 +41,7 @@ resource "aws_route_table" "route_table" {
         gateway_id = aws_internet_gateway.igw.id
     }
     tags = {
-        Name = "realtime-dwh-route-table-${random_id.vpc_display_id.hex}"
+        Name = "gko-case-route-table-${random_id.vpc_display_id.hex}"
     }
 }
 resource "aws_route_table_association" "subnet_associations" {
@@ -78,46 +78,7 @@ resource "aws_security_group" "postgres_sg" {
         cidr_blocks = [ "0.0.0.0/0" ]
     }
     tags = {
-        Name = "realtime-dwh-postgres-sg-${random_id.vpc_display_id.hex}"
-    }
-}
-# ------------------------------------------------------
-# CUSTOMERS ID AND CLOUDINIT
-# ------------------------------------------------------
-resource "random_id" "customers_id" {
-    count = local.num_postgres_instances
-    byte_length = 4
-}
-data "template_cloudinit_config" "pg_bootstrap_customers" {
-    base64_encode = true
-    part {
-        content_type = "text/x-shellscript"
-        content = "${file("scripts/pg_customers_bootstrap.sh")}"
-    }
-}
-# ------------------------------------------------------
-# CUSTOMERS INSTANCE
-# ------------------------------------------------------
-resource "aws_instance" "postgres_customers" {
-    count = local.num_postgres_instances
-    ami = "ami-0c7478fd229861c57"
-    instance_type = local.postgres_instance_shape
-    subnet_id = aws_subnet.public_subnets[0].id
-    vpc_security_group_ids = ["${aws_security_group.postgres_sg.id}"]
-    user_data = "${data.template_cloudinit_config.pg_bootstrap_customers.rendered}"
-    tags = {
-        Name = "realtime-dwh-postgres-customers-instance-${random_id.customers_id[count.index].hex}"
-    }
-}
-# ------------------------------------------------------
-# CUSTOMERS EIP
-# ------------------------------------------------------
-resource "aws_eip" "postgres_customers_eip" {
-    count = local.num_postgres_instances
-    vpc = true
-    instance = aws_instance.postgres_customers[count.index].id
-    tags = {
-        Name = "realtime-dwh-postgres-customers-eip-${random_id.customers_id[count.index].hex}"
+        Name = "gko-case-postgres-sg-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -127,7 +88,7 @@ resource "random_id" "products_id" {
     count = local.num_postgres_instances
     byte_length = 4
 }
-data "template_cloudinit_config" "pg_bootstrap_products" {
+data "cloudinit_config" "pg_bootstrap_products" {
     base64_encode = true
     part {
         content_type = "text/x-shellscript"
@@ -143,9 +104,9 @@ resource "aws_instance" "postgres_products" {
     instance_type = local.postgres_instance_shape
     subnet_id = aws_subnet.public_subnets[1].id
     vpc_security_group_ids = ["${aws_security_group.postgres_sg.id}"]
-    user_data = "${data.template_cloudinit_config.pg_bootstrap_products.rendered}"
+    user_data = "${data.cloudinit_config.pg_bootstrap_products.rendered}"
     tags = {
-        Name = "realtime-dwh-postgres-products-instance-${random_id.products_id[count.index].hex}"
+        Name = "gko-case-postgres-products-instance-${random_id.products_id[count.index].hex}"
     }
 }
 # ------------------------------------------------------
@@ -156,6 +117,6 @@ resource "aws_eip" "postgres_products_eip" {
     vpc = true
     instance = aws_instance.postgres_products[count.index].id
     tags = {
-        Name = "realtime-dwh-postgres-products-eip-${random_id.products_id[count.index].hex}"
+        Name = "gko-case-postgres-products-eip-${random_id.products_id[count.index].hex}"
     }
 }

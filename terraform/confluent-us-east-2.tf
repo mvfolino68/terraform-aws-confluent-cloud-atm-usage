@@ -2,17 +2,17 @@ resource "random_id" "env_display_id" {
     byte_length = 4
 }
 # ------------------------------------------------------
-# ENVIRONMENT
+# ENVIRONMENT (GLOBAL TO BOTH CLUSTERS)
 # ------------------------------------------------------
 resource "confluent_environment" "env" {
-    display_name = "realtime-dwh-env-${random_id.env_display_id.hex}"
+    display_name = "gko-case-env-${random_id.env_display_id.hex}"
 }
 # ------------------------------------------------------
 # SCHEMA REGISTRY
 # ------------------------------------------------------
 data "confluent_schema_registry_region" "sr_region" {
     cloud = "AWS"
-    region = "us-east-2"
+    region = "${local.aws_region}"
     package = "ESSENTIALS"
 }
 resource "confluent_schema_registry_cluster" "sr" {
@@ -28,11 +28,11 @@ resource "confluent_schema_registry_cluster" "sr" {
 # KAFKA
 # ------------------------------------------------------
 resource "confluent_kafka_cluster" "basic" {
-    display_name = "realtime-dwh-cluster"
-    availability = "SINGLE_ZONE"
+    display_name = "gko-case-cluster"
+    availability = "MULTI_ZONE"
     cloud = "AWS"
     region = "${local.aws_region}"
-    basic {}
+    standard {}
     environment {
         id = confluent_environment.env.id
     }
@@ -68,7 +68,7 @@ resource "confluent_role_binding" "ksql_cluster_admin" {
 resource "confluent_role_binding" "ksql_sr_resource_owner" {
     principal = "User:${confluent_service_account.ksql.id}"
     role_name = "ResourceOwner"
-    crn_pattern = format("%s/%s", confluent_schema_registry_cluster.sr.resource_name, "subject=*")
+    crn_pattern = format("%s/%s", confluent_schema_registry_cluster.sr_useast1.resource_name, "subject=*")
 }
 # ------------------------------------------------------
 # ACLS
@@ -208,49 +208,12 @@ resource "confluent_ksql_cluster" "ksql_cluster" {
         confluent_role_binding.ksql_cluster_admin,
         confluent_role_binding.ksql_sr_resource_owner,
         confluent_api_key.ksql_keys,
-        confluent_schema_registry_cluster.sr
+        confluent_schema_registry_cluster.sr_useast1
     ]
 }
 # ------------------------------------------------------
 # CONNECT
 # ------------------------------------------------------
-resource "confluent_connector" "postgres_cdc_customers" {
-    environment {
-        id = confluent_environment.env.id 
-    }
-    kafka_cluster {
-        id = confluent_kafka_cluster.basic.id
-    }
-    status = "RUNNING"
-    config_sensitive = {
-        "database.user": "postgres",
-        "database.password": "rt-dwh-c0nflu3nt!",
-    }
-    config_nonsensitive = {
-        "connector.class" = "PostgresCdcSource"
-        "name": "CUSTOMERS_DB"
-        "database.hostname": "${aws_eip.postgres_customers_eip[0].public_ip}"
-        "database.port": "5432"
-        "database.dbname": "postgres"
-        "database.server.name": "postgres"
-        "database.sslmode": "disable"
-        "table.include.list": "customers.customers, customers.demographics"
-        "slot.name": "camel"
-        "output.data.format": "JSON_SR"
-        "after.state.only": "false"
-        "output.key.format": "JSON_SR"
-        "tasks.max": "1"
-        "kafka.auth.mode": "SERVICE_ACCOUNT"
-        "kafka.service.account.id" = "${confluent_service_account.connectors.id}"
-    }
-    depends_on = [
-        confluent_kafka_acl.connectors_source_acl_create_topic,
-        confluent_kafka_acl.connectors_source_acl_write,
-        confluent_api_key.connector_keys,
-        aws_instance.postgres_customers,
-        aws_eip.postgres_customers_eip
-    ]
-}
 resource "confluent_connector" "postgres_cdc_products" {
     environment {
         id = confluent_environment.env.id 
@@ -286,3 +249,58 @@ resource "confluent_connector" "postgres_cdc_products" {
         aws_eip.postgres_products_eip
     ]
 }
+
+
+# CL not supported without at least one dedicated cluster
+
+# resource "confluent_cluster_link" "destination-outbound" {
+#   link_name = "destination-initiated-cluster-link"
+#   source_kafka_cluster {
+#     id                 = confluent_kafka_cluster.basic.id 
+#     bootstrap_endpoint = confluent_kafka_cluster.basic.bootstrap_endpoint
+#     credentials {
+#         key = confluent_api_key.app_manager_keys.id
+#         secret = confluent_api_key.app_manager_keys.secret
+#     }
+#   }
+
+#   destination_kafka_cluster {
+#     id                 = confluent_kafka_cluster.basic_useast1.id 
+#     #bootstrap_endpoint = confluent_kafka_cluster.basic_useast1.bootstrap_endpoint
+#     rest_endpoint = confluent_kafka_cluster.basic_useast1.rest_endpoint
+#     credentials {
+#         key = confluent_api_key.app_manager_keys_useast1.id
+#         secret = confluent_api_key.app_manager_keys_useast1.secret
+#     }
+#   }
+
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
+
+# resource "confluent_cluster_link" "destination-outbound-useast1" {
+#   link_name = "destination-initiated-cluster-link-useast1"
+#   destination_kafka_cluster {
+#     id                 = confluent_kafka_cluster.basic.id 
+#     rest_endpoint = confluent_kafka_cluster.basic.rest_endpoint
+#     #bootstrap_endpoint = confluent_kafka_cluster.basic.bootstrap_endpoint
+#     credentials {
+#         key = confluent_api_key.app_manager_keys.id
+#         secret = confluent_api_key.app_manager_keys.secret
+#     }
+#   }
+
+#   source_kafka_cluster {
+#     id                 = confluent_kafka_cluster.basic_useast1.id 
+#     bootstrap_endpoint = confluent_kafka_cluster.basic_useast1.bootstrap_endpoint
+#     credentials {
+#         key = confluent_api_key.app_manager_keys_useast1.id
+#         secret = confluent_api_key.app_manager_keys_useast1.secret
+#     }
+#   }
+
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
