@@ -68,7 +68,7 @@ resource "confluent_role_binding" "ksql_cluster_admin" {
 resource "confluent_role_binding" "ksql_sr_resource_owner" {
     principal = "User:${confluent_service_account.ksql.id}"
     role_name = "ResourceOwner"
-    crn_pattern = format("%s/%s", confluent_schema_registry_cluster.sr_useast1.resource_name, "subject=*")
+    crn_pattern = format("%s/%s", confluent_schema_registry_cluster.sr.resource_name, "subject=*")
 }
 # ------------------------------------------------------
 # ACLS
@@ -208,7 +208,7 @@ resource "confluent_ksql_cluster" "ksql_cluster" {
         confluent_role_binding.ksql_cluster_admin,
         confluent_role_binding.ksql_sr_resource_owner,
         confluent_api_key.ksql_keys,
-        confluent_schema_registry_cluster.sr_useast1
+        confluent_schema_registry_cluster.sr
     ]
 }
 # ------------------------------------------------------
