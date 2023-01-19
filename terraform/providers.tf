@@ -10,9 +10,17 @@ terraform {
         }
     }
 }
+variable "CONFLUENT_CLOUD_API_KEY" {
+    type        = string
+    description = "Env Admin key"
+}
+variable "CONFLUENT_CLOUD_API_SECRET" {
+    type        = string
+    description = "Env Admin secret"
+}
 provider "confluent" {
-  cloud_api_key    = "<cc environment admin key>"    # optionally use CONFLUENT_CLOUD_API_KEY env var
-  cloud_api_secret = "<cc environment admin secret>" # optionally use CONFLUENT_CLOUD_API_SECRET env var
+  cloud_api_key    = var.CONFLUENT_CLOUD_API_KEY
+  cloud_api_secret = var.CONFLUENT_CLOUD_API_SECRET
 }
 #Define the default provider (no alias defined):
 
