@@ -27,10 +27,3 @@ provider "confluent" {
 provider "aws" {
   region  = "us-east-2"
 }
-
-#Define alternate aliased providers:
-
-provider "aws" {
-  region  = "us-east-1"
-  alias   = "useast1"
-}

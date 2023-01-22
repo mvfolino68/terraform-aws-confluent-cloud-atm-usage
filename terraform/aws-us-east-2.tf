@@ -7,7 +7,7 @@ resource "random_id" "vpc_display_id" {
 resource "aws_vpc" "main" { 
     cidr_block = "10.0.0.0/16"
     tags = {
-        Name = "gko-case-vpc-main-${random_id.vpc_display_id.hex}"
+        Name = "atm-usage-vpc-main-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -19,7 +19,7 @@ resource "aws_subnet" "public_subnets" {
     cidr_block = "10.0.${count.index+1}.0/24"
     map_public_ip_on_launch = true
     tags = {
-        Name = "gko-case-public-subnet-${count.index}-${random_id.vpc_display_id.hex}"
+        Name = "atm-usage-public-subnet-${count.index}-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -28,7 +28,7 @@ resource "aws_subnet" "public_subnets" {
 resource "aws_internet_gateway" "igw" { 
     vpc_id = aws_vpc.main.id
     tags = {
-        Name = "gko-case-igw-${random_id.vpc_display_id.hex}"
+        Name = "atm-usage-igw-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
@@ -41,7 +41,7 @@ resource "aws_route_table" "route_table" {
         gateway_id = aws_internet_gateway.igw.id
     }
     tags = {
-        Name = "gko-case-route-table-${random_id.vpc_display_id.hex}"
+        Name = "atm-usage-route-table-${random_id.vpc_display_id.hex}"
     }
 }
 resource "aws_route_table_association" "subnet_associations" {
@@ -78,45 +78,45 @@ resource "aws_security_group" "postgres_sg" {
         cidr_blocks = [ "0.0.0.0/0" ]
     }
     tags = {
-        Name = "gko-case-postgres-sg-${random_id.vpc_display_id.hex}"
+        Name = "atm-usage-postgres-sg-${random_id.vpc_display_id.hex}"
     }
 }
 # ------------------------------------------------------
-# PRODUCTS ID AND CLOUDINIT
+# ATM ID AND CLOUDINIT
 # ------------------------------------------------------
-resource "random_id" "products_id" {
+resource "random_id" "atm_id" {
     count = local.num_postgres_instances
     byte_length = 4
 }
-data "cloudinit_config" "pg_bootstrap_products" {
+data "cloudinit_config" "pg_bootstrap_atm" {
     base64_encode = true
     part {
         content_type = "text/x-shellscript"
-        content = "${file("scripts/pg_products_bootstrap.sh")}"
+        content = "${file("scripts/pg_atm_bootstrap.sh")}"
     }
 }
 # ------------------------------------------------------
-# PRODUCTS INSTANCE
+# ATM INSTANCE
 # ------------------------------------------------------
-resource "aws_instance" "postgres_products" {
+resource "aws_instance" "postgres_atm" {
     count = local.num_postgres_instances
     ami = "ami-0c7478fd229861c57"
     instance_type = local.postgres_instance_shape
     subnet_id = aws_subnet.public_subnets[1].id
     vpc_security_group_ids = ["${aws_security_group.postgres_sg.id}"]
-    user_data = "${data.cloudinit_config.pg_bootstrap_products.rendered}"
+    user_data = "${data.cloudinit_config.pg_bootstrap_atm.rendered}"
     tags = {
-        Name = "gko-case-postgres-products-instance-${random_id.products_id[count.index].hex}"
+        Name = "atm-usage-postgres-atm-instance-${random_id.atm_id[count.index].hex}"
     }
 }
 # ------------------------------------------------------
-# PRODUCTS EIP
+# ATM EIP
 # ------------------------------------------------------
-resource "aws_eip" "postgres_products_eip" {
+resource "aws_eip" "postgres_atm_eip" {
     count = local.num_postgres_instances
     vpc = true
-    instance = aws_instance.postgres_products[count.index].id
+    instance = aws_instance.postgres_atm[count.index].id
     tags = {
-        Name = "gko-case-postgres-products-eip-${random_id.products_id[count.index].hex}"
+        Name = "atm-usage-postgres-atm-eip-${random_id.atm_id[count.index].hex}"
     }
 }

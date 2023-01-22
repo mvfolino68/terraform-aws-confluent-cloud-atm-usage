@@ -5,7 +5,7 @@ resource "random_id" "env_display_id" {
 # ENVIRONMENT (GLOBAL TO BOTH CLUSTERS)
 # ------------------------------------------------------
 resource "confluent_environment" "env" {
-    display_name = "gko-case-env-${random_id.env_display_id.hex}"
+    display_name = "atm-usage-env-${random_id.env_display_id.hex}"
 }
 # ------------------------------------------------------
 # SCHEMA REGISTRY
@@ -28,7 +28,7 @@ resource "confluent_schema_registry_cluster" "sr" {
 # KAFKA
 # ------------------------------------------------------
 resource "confluent_kafka_cluster" "basic" {
-    display_name = "gko-case-cluster${random_id.env_display_id.hex}"
+    display_name = "atm-usage-cluster${random_id.env_display_id.hex}"
     availability = "MULTI_ZONE"
     cloud = "AWS"
     region = "${local.aws_region}"
@@ -214,7 +214,7 @@ resource "confluent_ksql_cluster" "ksql_cluster" {
 # ------------------------------------------------------
 # CONNECT
 # ------------------------------------------------------
-resource "confluent_connector" "postgres_cdc_products" {
+resource "confluent_connector" "postgres_cdc_atm" {
     environment {
         id = confluent_environment.env.id 
     }
@@ -228,13 +228,13 @@ resource "confluent_connector" "postgres_cdc_products" {
     }
     config_nonsensitive = {
         "connector.class" = "PostgresCdcSource"
-        "name": "PRODUCTS_DB"
-        "database.hostname": "${aws_eip.postgres_products_eip[0].public_ip}"
+        "name": "ATM_DB"
+        "database.hostname": "${aws_eip.postgres_atm_eip[0].public_ip}"
         "database.port": "5432"
         "database.dbname": "postgres"
         "database.server.name": "postgres"
         "database.sslmode": "disable"
-        "table.include.list": "products.products, products.orders"
+        "table.include.list": "atm_locations.atm_locations, atm_locations.customers, atm_locations.atm_usage"
         "slot.name": "toad"
         "output.data.format": "JSON_SR"
         "tasks.max": "1"
@@ -245,62 +245,7 @@ resource "confluent_connector" "postgres_cdc_products" {
         confluent_kafka_acl.connectors_source_acl_create_topic,
         confluent_kafka_acl.connectors_source_acl_write,
         confluent_api_key.connector_keys,
-        aws_instance.postgres_products,
-        aws_eip.postgres_products_eip
+        aws_instance.postgres_atm,
+        aws_eip.postgres_atm_eip
     ]
 }
-
-
-# CL not supported without at least one dedicated cluster
-
-# resource "confluent_cluster_link" "destination-outbound" {
-#   link_name = "destination-initiated-cluster-link"
-#   source_kafka_cluster {
-#     id                 = confluent_kafka_cluster.basic.id 
-#     bootstrap_endpoint = confluent_kafka_cluster.basic.bootstrap_endpoint
-#     credentials {
-#         key = confluent_api_key.app_manager_keys.id
-#         secret = confluent_api_key.app_manager_keys.secret
-#     }
-#   }
-
-#   destination_kafka_cluster {
-#     id                 = confluent_kafka_cluster.basic_useast1.id 
-#     #bootstrap_endpoint = confluent_kafka_cluster.basic_useast1.bootstrap_endpoint
-#     rest_endpoint = confluent_kafka_cluster.basic_useast1.rest_endpoint
-#     credentials {
-#         key = confluent_api_key.app_manager_keys_useast1.id
-#         secret = confluent_api_key.app_manager_keys_useast1.secret
-#     }
-#   }
-
-#   lifecycle {
-#     prevent_destroy = true
-#   }
-# }
-
-# resource "confluent_cluster_link" "destination-outbound-useast1" {
-#   link_name = "destination-initiated-cluster-link-useast1"
-#   destination_kafka_cluster {
-#     id                 = confluent_kafka_cluster.basic.id 
-#     rest_endpoint = confluent_kafka_cluster.basic.rest_endpoint
-#     #bootstrap_endpoint = confluent_kafka_cluster.basic.bootstrap_endpoint
-#     credentials {
-#         key = confluent_api_key.app_manager_keys.id
-#         secret = confluent_api_key.app_manager_keys.secret
-#     }
-#   }
-
-#   source_kafka_cluster {
-#     id                 = confluent_kafka_cluster.basic_useast1.id 
-#     bootstrap_endpoint = confluent_kafka_cluster.basic_useast1.bootstrap_endpoint
-#     credentials {
-#         key = confluent_api_key.app_manager_keys_useast1.id
-#         secret = confluent_api_key.app_manager_keys_useast1.secret
-#     }
-#   }
-
-#   lifecycle {
-#     prevent_destroy = true
-#   }
-# }

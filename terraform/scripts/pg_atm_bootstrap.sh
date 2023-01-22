@@ -14,6 +14,6 @@ sudo service docker start
 echo "Docker service started." >> startup.log
 echo "--------------------------------------"
 echo "Starting postgres container..." >> startup.log
-sudo docker run -p 5432:5432 --name postgres -d zachhamilton/rt-dwh-postgres-products:2.0
+sudo docker run -p 5432:5432 --name postgres -d mvfolino68/postgress-atm-usage:latest
 echo "Started postgres container in the background." >> startup.log
 echo "Done..." >> startup.log
