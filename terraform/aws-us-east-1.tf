@@ -6,6 +6,7 @@ resource "random_id" "vpc_display_id" {
 # ------------------------------------------------------
 resource "aws_vpc" "main" { 
     cidr_block = "10.0.0.0/16"
+    provider = aws
     tags = {
         Name = "atm-usage-vpc-main-${random_id.vpc_display_id.hex}"
     }
@@ -21,6 +22,8 @@ resource "aws_subnet" "public_subnets" {
     tags = {
         Name = "atm-usage-public-subnet-${count.index}-${random_id.vpc_display_id.hex}"
     }
+    provider = aws
+
 }
 # ------------------------------------------------------
 # IGW
@@ -30,6 +33,8 @@ resource "aws_internet_gateway" "igw" {
     tags = {
         Name = "atm-usage-igw-${random_id.vpc_display_id.hex}"
     }
+    provider = aws
+
 }
 # ------------------------------------------------------
 # ROUTE TABLE
@@ -43,11 +48,14 @@ resource "aws_route_table" "route_table" {
     tags = {
         Name = "atm-usage-route-table-${random_id.vpc_display_id.hex}"
     }
+    provider = aws
 }
 resource "aws_route_table_association" "subnet_associations" {
     count = 3
     subnet_id = aws_subnet.public_subnets[count.index].id
     route_table_id = aws_route_table.route_table.id
+    provider = aws
+
 }
 # ------------------------------------------------------
 # SECURITY GROUP
@@ -80,6 +88,7 @@ resource "aws_security_group" "postgres_sg" {
     tags = {
         Name = "atm-usage-postgres-sg-${random_id.vpc_display_id.hex}"
     }
+    provider = aws
 }
 # ------------------------------------------------------
 # ATM ID AND CLOUDINIT
@@ -100,7 +109,7 @@ data "cloudinit_config" "pg_bootstrap_atm" {
 # ------------------------------------------------------
 resource "aws_instance" "postgres_atm" {
     count = local.num_postgres_instances
-    ami = "ami-0c7478fd229861c57"
+    ami = "ami-03ededff12e34e59e"
     instance_type = local.postgres_instance_shape
     subnet_id = aws_subnet.public_subnets[1].id
     vpc_security_group_ids = ["${aws_security_group.postgres_sg.id}"]
@@ -108,6 +117,7 @@ resource "aws_instance" "postgres_atm" {
     tags = {
         Name = "atm-usage-postgres-atm-instance-${random_id.atm_id[count.index].hex}"
     }
+    provider = aws
 }
 # ------------------------------------------------------
 # ATM EIP
@@ -116,6 +126,7 @@ resource "aws_eip" "postgres_atm_eip" {
     count = local.num_postgres_instances
     vpc = true
     instance = aws_instance.postgres_atm[count.index].id
+    provider = aws
     tags = {
         Name = "atm-usage-postgres-atm-eip-${random_id.atm_id[count.index].hex}"
     }
