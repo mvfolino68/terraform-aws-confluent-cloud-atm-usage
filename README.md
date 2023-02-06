@@ -65,9 +65,19 @@ Give your configuration some time to create. When it's done, head to the Conflue
 
 To create the streaming topology, paste the following into you Ksql editor. **Be sure to set `auto.offset.reset` to `earliest`!**
 
-**TBD**
+see `ksql.sql` for more details
 
 Once everything has been created, go check out Stream Lineage to see your topology in action.
+
+## MongoDB Connector (to automate)
+
+1. In CC cluster `Add MongoDB Atlas Sink connector`
+   1. hostname: `cluster0.xprwruk.mongodb.net`
+   2. connection user: `mongodbuser`
+   3. password: `abcABC123`
+   4. database: `dev`
+   5. collection: `atm_fraud`
+   6. schema: `json sr`
 
 ## Cleanup
 

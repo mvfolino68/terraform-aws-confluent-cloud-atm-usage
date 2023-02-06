@@ -12,7 +12,7 @@ CREATE EXTENSION postgis;
 CREATE EXTENSION pg_cron;
 -- # create and populate atm_locations data table
 CREATE TABLE atm_locations (
-    location_id VARCHAR(255) PRIMARY KEY,
+    location_id INT PRIMARY KEY,
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     address VARCHAR(255),
@@ -21,7 +21,7 @@ CREATE TABLE atm_locations (
     zip_code VARCHAR(255),
     daily_transactions INT
 );
-COPY atm_locations(location_id, latitude, longitude)
+COPY atm_locations(location_id, latitude, longitude, address, city, state, zip_code, daily_transactions)
 FROM '/data/atm_locations.csv' DELIMITER ',' CSV HEADER;
 -- # create and populate customers data table
 CREATE TABLE customers (
@@ -41,44 +41,48 @@ CREATE TABLE atm_usage (
     value DOUBLE PRECISION,
     time TIMESTAMP
 );
--- #
--- add weighting for fraud
+-- # add weighting for fraud
 SELECT *,
     random() as fraudulent_weight INTO location
-FROM atm_locations.atm_locations -- #
-CREATE OR REPLACE PROCEDURE generate_atm_usage() AS $$
-DECLARE location atm_locations.atm_locations %ROWTYPE;
-customer atm_locations.customers %ROWTYPE;
-uuid VARCHAR;
-value INTEGER;
+FROM atm_locations.atm_locations;
+
+
+-- # create proceedure to generate atm_usage
+CREATE or replace PROCEDURE generate_atm_usage() AS $$
+    DECLARE location2 atm_locations.atm_locations %ROWTYPE;
+    customer atm_locations.customers %ROWTYPE;
+    uuid VARCHAR;
+    value INTEGER;
 BEGIN FOR i IN 0..60 BY 1 LOOP BEGIN
-SELECT * INTO location
-FROM atm_locations.atm_locations
-ORDER BY fraudulent_weight * random()
-LIMIT 1;
-SELECT * INTO customer
-FROM atm_locations.customers
-ORDER BY random()
-LIMIT 1;
-SELECT uuid_in(
-        md5(random()::text || clock_timestamp()::text)::cstring
-    ) INTO uuid;
-value := (floor(random() * 191) + 10) * 10;
-INSERT INTO atm_locations.atm_usage (usage_id, location_id, customer_id, value, time)
-VALUES (
-        uuid,
-        location.location_id,
-        customer.id,
-        value,
-        NOW()
-    );
-COMMIT;
-PERFORM pg_sleep(1);
-END;
+    SELECT * INTO location2
+    FROM atm_locations.location
+    ORDER BY fraudulent_weight * random()
+    LIMIT 1;
+
+    SELECT * INTO customer
+    FROM atm_locations.customers
+    ORDER BY random()
+    LIMIT 1;
+    SELECT uuid_in(
+            md5(random()::text || clock_timestamp()::text)::cstring
+        ) INTO uuid;
+    value := (floor(random() * 191) + 10) * 10;
+    INSERT INTO atm_locations.atm_usage (usage_id, location_id, customer_id, value, time)
+    VALUES (
+            uuid,
+            location2.location_id,
+            customer.id,
+            value,
+            NOW()
+        );
+    COMMIT;
+    PERFORM pg_sleep(1);
+    END;
 END LOOP;
 END;
 $$ LANGUAGE plpgsql;
--- #
+
+-- # schedule the procedure generate_atm and delete data
 SELECT cron.schedule(
         'mrclean',
         '0 */6 * * *',
