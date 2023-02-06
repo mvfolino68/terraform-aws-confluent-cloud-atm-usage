@@ -25,5 +25,5 @@ provider "confluent" {
 #Define the default provider (no alias defined):
 
 provider "aws" {
-  region  = "us-east-2"
+  region  = "us-east-1"
 }
