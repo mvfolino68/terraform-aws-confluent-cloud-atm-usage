@@ -13,7 +13,7 @@ resource "confluent_environment" "env" {
 data "confluent_schema_registry_region" "sr_region" {
     cloud = "AWS"
     region = "${local.aws_region}"
-    package = "ESSENTIALS"
+    package = "ADVANCED"
 }
 resource "confluent_schema_registry_cluster" "sr" {
     package = data.confluent_schema_registry_region.sr_region.package
