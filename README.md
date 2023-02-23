@@ -86,3 +86,20 @@ Once you're satisfied with what you've built, do ahead and destroy it.
 ```bash
 terraform destroy
 ```
+
+## Storage Issue with Free Tier
+
+Allowing this to continue to run will incur charges or consume all of the free tier. To avoid this, you can destroy the resources that exceed free tier or are not free tier eligible. You can reapply the resources that are free tier eligible when you're ready to continue.
+
+```bash
+terraform destroy -target=confluent_connector.postgres_cdc_atm \
+-target=aws_vpc.main \
+-target=aws_subnet.public_subnets \
+-target=aws_internet_gateway.igw \
+-target=aws_route_table.route_table \
+-target=aws_security_group.postgres_sg \
+-target=random_id.atm_id \
+-target=cloudinit_config.pg_bootstrap_atm \
+-target=aws_instance.postgres_atm \
+-target=aws_eip.postgres_atm_eip
+```
