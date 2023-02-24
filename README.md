@@ -74,6 +74,8 @@ Once everything has been created, go check out Stream Lineage to see your topolo
 
 ## MongoDB Connector (Not automated yet)
 
+When you have the MongoDB Atlas cluster created, you can create the connector to connect to it. These are example parameters for the connector.
+
 1. In CC cluster `Add MongoDB Atlas Sink connector`
    1. hostname: `cluster0.xprwruk.mongodb.net`
    2. connection user: `mongodbuser`
