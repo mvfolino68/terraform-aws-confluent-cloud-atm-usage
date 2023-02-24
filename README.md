@@ -1,16 +1,19 @@
-# Terraform Template for GKO Case 1
+# Terraform Template for AWS and Confluent Cloud Resources
+
+Example Terraform template for provisioning AWS and Confluent Cloud resources for atm-fraud demo.
 
 ## Before you get started
 
 Before you get started, you're going to need a few things.
 
-- Terraform (**_obviously_**)
+- Terraform
 - Confluent Cloud account
 - AWS account
 - Confluent Cloud **Cloud API Key & Secret**
+- MongoDB Atlas
 - AWS API Key & Secret (ideally with some kind of admin permission)
 
-If you don't have these things, create and collect them.
+If you don't have these things, create and collect them. **Make sure to create resources in us-east-1.**
 
 ## Getting started
 
@@ -69,7 +72,7 @@ see `ksql.sql` for more details
 
 Once everything has been created, go check out Stream Lineage to see your topology in action.
 
-## MongoDB Connector (to automate)
+## MongoDB Connector (Not automated yet)
 
 1. In CC cluster `Add MongoDB Atlas Sink connector`
    1. hostname: `cluster0.xprwruk.mongodb.net`
