@@ -239,6 +239,7 @@ resource "confluent_connector" "postgres_cdc_atm" {
         "output.data.format": "JSON_SR"
         "tasks.max": "1"
         "kafka.auth.mode": "SERVICE_ACCOUNT"
+        "time.precision.mode":"connect"
         "kafka.service.account.id" = "${confluent_service_account.connectors.id}"
     }
     depends_on = [

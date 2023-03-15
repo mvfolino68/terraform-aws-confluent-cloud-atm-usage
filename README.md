@@ -7,11 +7,18 @@ Example Terraform template for provisioning AWS and Confluent Cloud resources fo
 Before you get started, you're going to need a few things.
 
 - Terraform
+  - Install Terraform by following the instructions [here](https://learn.hashicorp.com/tutorials/terraform/install-cli).
 - Confluent Cloud account
+  - Sign up for a [Confluent Cloud](https://confluent.cloud/) account.
 - AWS account
+  - Sign up for an [AWS](https://aws.amazon.com/) account.
 - Confluent Cloud **Cloud API Key & Secret**
+  - Create Confluent Cloud API Key & Secret by following the instructions [here](https://docs.confluent.io/cloud/current/access-management/authenticate/api-keys/api-keys.html#create-a-cloud-api-key). You will need to create a new API Key and Secret for this demo or use an existing one. Terraform will use these credentials to create the resources in Confluent Cloud and will prompt you when you run `terraform apply` for the values.
 - MongoDB Atlas
-- AWS API Key & Secret (ideally with some kind of admin permission)
+  - Create a MongoDB Atlas cluster by following the instructions [here](https://docs.atlas.mongodb.com/tutorial/deploy-free-tier-cluster/). You will need to create a new cluster for this demo or use an existing one.
+- AWS CLI and AWS credentials
+  - Install the AWS CLI by following the instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
+  - Configure the AWS CLI by following the instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html).
 
 If you don't have these things, create and collect them. **Make sure to create resources in us-east-1.**
 
@@ -20,22 +27,7 @@ If you don't have these things, create and collect them. **Make sure to create r
 To begin, the absolute first thing you'll need to do is clone this repo.
 
 ```bash
-git clone <repo name> && cd <repo name>
-```
-
-Next, you should create a secrets file to store you keys and secrets.
-
-```bash
-cat <<EOF > env.sh
-export TF_VAR_CONFLUENT_CLOUD_API_KEY="<replace>"
-export TF_VAR_CONFLUENT_CLOUD_API_SECRET="<replace>"
-EOF
-```
-
-After copying your secrets into the file (replacing `<replace>`), you should export them to the console.
-
-```bash
-source env.sh
+git clone git@github.com:mvfolino68/terraform-aws-confluent-cloud-atm-usage.git && cd terraform-aws-confluent-cloud-atm-usag
 ```
 
 ## Provisioning almost everything
