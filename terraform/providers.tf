@@ -10,14 +10,6 @@ terraform {
         }
     }
 }
-variable "CONFLUENT_CLOUD_API_KEY" {
-    type        = string
-    description = "Env Admin key"
-}
-variable "CONFLUENT_CLOUD_API_SECRET" {
-    type        = string
-    description = "Env Admin secret"
-}
 provider "confluent" {
   cloud_api_key    = var.CONFLUENT_CLOUD_API_KEY
   cloud_api_secret = var.CONFLUENT_CLOUD_API_SECRET

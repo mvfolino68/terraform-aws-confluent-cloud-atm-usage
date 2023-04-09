@@ -6,3 +6,11 @@ locals {
     confluent_description = "Confluent Resource created by Terraform"
     user_email = "mfolino@confluent.io"
 }
+variable "CONFLUENT_CLOUD_API_KEY" {
+    type        = string
+    description = "Env Admin key"
+}
+variable "CONFLUENT_CLOUD_API_SECRET" {
+    type        = string
+    description = "Env Admin secret"
+}
