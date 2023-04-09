@@ -16,7 +16,7 @@ SELECT
 transaction_key-> usage_id transaction_key,
 location_id,
 customer_id,
-TIMESTAMPSUB(hours, 5, time) time,
+TIMESTAMPSUB(hours, 0, time) time,
 round(value,-1) value
 FROM  TRANSACTION_BASE EMIT CHANGES;
 
@@ -29,7 +29,7 @@ VALUE_FORMAT='JSON_SR'
 transaction_key-> usage_id transaction_key,
 location_id,
 customer_id,
-TIMESTAMPSUB(hours, 6, time) time,
+TIMESTAMPSUB(hours, 0, time) time,
 value
 FROM  TRANSACTION_BASE
 PARTITION BY transaction_key-> usage_id
@@ -44,7 +44,7 @@ VALUE_FORMAT='JSON_SR'
 transaction_key-> usage_id transaction_key,
 location_id,
 customer_id,
-TIMESTAMPSUB(hours, 6, time) time,
+TIMESTAMPSUB(hours, 0, time) time,
 value
 FROM  TRANSACTION_BASE
 PARTITION BY transaction_key-> usage_id

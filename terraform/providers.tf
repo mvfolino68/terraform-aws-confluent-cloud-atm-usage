@@ -8,15 +8,11 @@ terraform {
             source = "confluentinc/confluent"
             version = "1.23.0"
         }
+        mongodbatlas = {
+            source = "mongodb/mongodbatlas"
+            version = "1.8.2"
+        }
     }
-}
-variable "CONFLUENT_CLOUD_API_KEY" {
-    type        = string
-    description = "Env Admin key"
-}
-variable "CONFLUENT_CLOUD_API_SECRET" {
-    type        = string
-    description = "Env Admin secret"
 }
 provider "confluent" {
   cloud_api_key    = var.CONFLUENT_CLOUD_API_KEY
@@ -26,4 +22,9 @@ provider "confluent" {
 
 provider "aws" {
   region  = "us-east-1"
+}
+
+provider "mongodbatlas" {
+  public_key = var.MONGODB_ATLAS_PUBLIC_KEY
+  private_key = var.MONGODB_ATLAS_PRIVATE_KEY
 }
