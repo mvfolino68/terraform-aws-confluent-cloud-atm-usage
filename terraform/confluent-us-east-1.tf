@@ -252,3 +252,43 @@ resource "confluent_connector" "postgres_cdc_atm" {
 }
 
 
+# {
+#   "name": "MongoDbAtlasSinkConnector_0",
+#   "config": {
+#     "connector.class": "MongoDbAtlasSink",
+#     "name": "MongoDbAtlasSinkConnector_0",
+#     "input.data.format": "JSON_SR",
+#     "cdc.handler": "None",
+#     "delete.on.null.values": "false",
+#     "max.batch.size": "0",
+#     "bulk.write.ordered": "true",
+#     "rate.limiting.timeout": "0",
+#     "rate.limiting.every.n": "0",
+#     "write.strategy": "DefaultWriteModelStrategy",
+#     "kafka.auth.mode": "SERVICE_ACCOUNT",
+#     "kafka.service.account.id": "sa-g92871",
+#     "topics": "potential_fraud_enriched",
+#     "connection.host": "cluster0.xprwruk.mongodb.net",
+#     "connection.user": "mongodbuser",
+#     "connection.password": "*********",
+#     "database": "dev",
+#     "collection": "atm_fraud",
+#     "doc.id.strategy": "BsonOidStrategy",
+#     "doc.id.strategy.overwrite.existing": "false",
+#     "document.id.strategy.uuid.format": "string",
+#     "key.projection.type": "none",
+#     "value.projection.type": "none",
+#     "namespace.mapper.class": "DefaultNamespaceMapper",
+#     "namespace.mapper.error.if.invalid": "false",
+#     "server.api.deprecation.errors": "false",
+#     "server.api.strict": "false",
+#     "max.num.retries": "3",
+#     "retries.defer.timeout": "5000",
+#     "timeseries.timefield.auto.convert": "false",
+#     "timeseries.timefield.auto.convert.date.format": "yyyy-MM-dd[['T'][ ]][HH:mm:ss[[.][SSSSSS][SSS]][ ]VV[ ]'['VV']'][HH:mm:ss[[.][SSSSSS][SSS]][ ]X][HH:mm:ss[[.][SSSSSS][SSS]]]",
+#     "timeseries.timefield.auto.convert.locale.language.tag": "en",
+#     "timeseries.expire.after.seconds": "0",
+#     "ts.granularity": "None",
+#     "tasks.max": "1"
+#   }
+# }
